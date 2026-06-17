@@ -86,13 +86,17 @@ La URL del webhook debe ser **HTTPS pública**. En local usa un túnel
 
 ```bash
 python -m scripts.seed_client \
-  --name "Cliente Demo" \
-  --page-id 153125381509891 \
-  --token "EAAB...token-de-pagina..." \
-  --email leads@cliente.com \
-  --sheet-id 1AbC...id-del-sheet... \
+  --name "<NOMBRE_CLIENTE>" \
+  --page-id <PAGE_ID> \
+  --token "<PAGE_ACCESS_TOKEN>" \
+  --email <CORREO_DESTINO> \
+  --sheet-id <GOOGLE_SHEET_ID> \
   --tab Leads
 ```
+
+> **Seguridad:** el `<PAGE_ACCESS_TOKEN>` es una credencial sensible. No lo
+> escribas en archivos versionados ni lo compartas. En producción se gestiona
+> mediante variables de entorno o un panel de administración, no a mano.
 
 ## Notas técnicas
 
