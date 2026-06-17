@@ -1,0 +1,20 @@
+@'
+# Entorno y secretos
+.env
+service-account.json
+token-pagina.txt
+*.txt
+
+# Base de datos local
+*.db
+vaovao.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Scripts de prueba
+test-lead.ps1
+'@ | Out-File -FilePath .gitignore -Encoding UTF8
