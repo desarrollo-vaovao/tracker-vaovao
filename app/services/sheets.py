@@ -79,3 +79,4 @@ def append_lead_row(sheet_id: str, tab: str, row: dict[str, str]) -> None:
         values = [row.get(col, "") for col in headers]
         ws.append_row(values, value_input_option="RAW")
         logger.info("Lead escrito en Sheet %s (tab %s)", sheet_id, tab)
+        # deploy: credenciales desde variable de entorno
