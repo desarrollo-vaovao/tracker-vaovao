@@ -8,7 +8,9 @@ Estrategia:
 Así, si un cliente cambia las preguntas del formulario, las columnas nuevas
 aparecen solas sin tocar el código.
 """
+import json
 import logging
+import os
 import threading
 
 import gspread
@@ -34,9 +36,16 @@ _client: gspread.Client | None = None
 def _get_client() -> gspread.Client:
     global _client
     if _client is None:
-        creds = Credentials.from_service_account_file(
-            settings.google_service_account_file, scopes=SCOPES
-        )
+        # En producción (Railway): credenciales desde variable de entorno.
+        # En local: desde el archivo apuntado por GOOGLE_SERVICE_ACCOUNT_FILE.
+        creds_json = os.environ.get("GOOGLE_CREDENTIALS_JSON")
+        if creds_json:
+            info = json.loads(creds_json)
+            creds = Credentials.from_service_account_info(info, scopes=SCOPES)
+        else:
+            creds = Credentials.from_service_account_file(
+                settings.google_service_account_file, scopes=SCOPES
+            )
         _client = gspread.authorize(creds)
     return _client
 
