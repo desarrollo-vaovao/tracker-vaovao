@@ -5,3 +5,4 @@ sqlalchemy
 httpx
 gspread
 google-auth
+psycopg2-binary>=2.9
