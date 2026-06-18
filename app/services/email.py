@@ -5,9 +5,12 @@ clase que herede de EmailSender y registrarla en get_email_sender().
 """
 import html
 import logging
+import os
 import smtplib
 from abc import ABC, abstractmethod
 from email.message import EmailMessage
+
+import httpx
 
 from app.config import get_settings
 
@@ -38,10 +41,47 @@ class SmtpEmailSender(EmailSender):
         logger.info("Email enviado a %s", to)
 
 
+def _parse_from(raw: str) -> tuple[str, str]:
+    """Separa 'Nombre <correo@dominio>' en (nombre, correo)."""
+    if "<" in raw and ">" in raw:
+        name = raw.split("<")[0].strip()
+        addr = raw.split("<")[1].split(">")[0].strip()
+        return name or "VaoVao Leads", addr
+    return "VaoVao Leads", raw.strip()
+
+
+class BrevoApiEmailSender(EmailSender):
+    """Envía vía la API HTTP de Brevo (puerto 443, no lo bloquea Railway)."""
+
+    def send(self, to: str, subject: str, html_body: str) -> None:
+        api_key = os.environ.get("BREVO_API_KEY", "")
+        if not api_key:
+            raise ValueError("Falta BREVO_API_KEY")
+
+        sender_name, sender_email = _parse_from(settings.smtp_from)
+        payload = {
+            "sender": {"name": sender_name, "email": sender_email},
+            "to": [{"email": to}],
+            "subject": subject,
+            "htmlContent": html_body,
+        }
+        headers = {"api-key": api_key, "content-type": "application/json"}
+
+        with httpx.Client(timeout=15.0) as client:
+            resp = client.post(
+                "https://api.brevo.com/v3/smtp/email", json=payload, headers=headers
+            )
+        if resp.status_code not in (200, 201):
+            raise RuntimeError(f"Brevo API {resp.status_code}: {resp.text}")
+        logger.info("Email enviado a %s (Brevo API)", to)
+
+
 def get_email_sender() -> EmailSender:
     provider = settings.email_provider.lower()
     if provider == "smtp":
         return SmtpEmailSender()
+    if provider == "brevo_api":
+        return BrevoApiEmailSender()
     raise ValueError(f"EMAIL_PROVIDER no soportado: {provider}")
 
 
